@@ -91,6 +91,14 @@ class PuzzlePiece:
 		for i in range(len(self.cells)):
 			self.cells[i].r_rotate()
 
+  def translate(self, delx=0, dely=0):
+    for i in range(len(self.cells)):
+      self.cells[i].x = self.cells[i].x + delx 
+      self.cells[i].y = self.cells[i].y + dely
+ 
+
+
+
 
 class Piece:
     def __init__(self, color, unit_list):
@@ -190,41 +198,41 @@ p = PuzzlePiece([[0,0], [0,1], [1,0], [1,1], [2,0], [2,1], [1,2]], "white")
 b.print()
 
 
-A = placePiece(A, hole, H[11])
-#printBoard(A)
-#red 3x3
-A = placePiece(A, pieces[0].rotate(0), [1,0])
-# printBoard(A)
-##print(' ')
-###yellow 3x3
-A = placePiece(A, pieces[1].rotate(0), [1,3])
-##printBoard(A)
-##print(' ')
-###green 3x4
-A = placePiece(A, pieces[2].rotate(1), [3,0])
-##printBoard(A)
-##print(' ')
-###teal 1x5
-A = placePiece(A, pieces[3].rotate(1), [6,2])
-##printBoard(A)
-##print(' ')
-###orange 1x2
-A = placePiece(A, pieces[4].rotate(1), [5,4])
-##printBoard(A)
-##print(' ')
-###red 2x4 
-A = placePiece(A, pieces[5].rotate(2), [2,3])
-##printBoard(A)
-##print(' ')
-###purple 3x3
-A = placePiece(A, pieces[6].rotate(2), [0,4])
-##printBoard(A)
-##print(' ')
-###purple 2x3 
-A = placePiece(A, pieces[7].rotate(1), [3,5])
-##printBoard(A)
-##print(' ')
-###blue 2x4
-A = placePiece(A, pieces[8].rotate(0), [0,0])
+# A = placePiece(A, hole, H[11])
+# #printBoard(A)
+# #red 3x3
+# A = placePiece(A, pieces[0].rotate(0), [1,0])
+# # printBoard(A)
+# ##print(' ')
+# ###yellow 3x3
+# A = placePiece(A, pieces[1].rotate(0), [1,3])
+# ##printBoard(A)
+# ##print(' ')
+# ###green 3x4
+# A = placePiece(A, pieces[2].rotate(1), [3,0])
+# ##printBoard(A)
+# ##print(' ')
+# ###teal 1x5
+# A = placePiece(A, pieces[3].rotate(1), [6,2])
+# ##printBoard(A)
+# ##print(' ')
+# ###orange 1x2
+# A = placePiece(A, pieces[4].rotate(1), [5,4])
+# ##printBoard(A)
+# ##print(' ')
+# ###red 2x4 
+# A = placePiece(A, pieces[5].rotate(2), [2,3])
+# ##printBoard(A)
+# ##print(' ')
+# ###purple 3x3
+# A = placePiece(A, pieces[6].rotate(2), [0,4])
+# ##printBoard(A)
+# ##print(' ')
+# ###purple 2x3 
+# A = placePiece(A, pieces[7].rotate(1), [3,5])
+# ##printBoard(A)
+# ##print(' ')
+# ###blue 2x4
+# A = placePiece(A, pieces[8].rotate(0), [0,0])
 ###print to terminal
-printBoard(A)
+# printBoard(A)
