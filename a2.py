@@ -189,15 +189,10 @@ def initial_options(board, pieces):
 
 
 def search(board, pieces, hole):
-	stack = []
-	pieces.sort(key=lambda x: x.length, reverse=True)
-	board.set_hole(hole.x, hole.y)
 	for piece in pieces:
 		options = generate_possible_options(piece, board)
 		for o in options:
 			place_piece_on_board(o, board)
-
-
 	return board 
 
 
@@ -216,6 +211,8 @@ pieces.append(PuzzlePiece([[0,1], [1,0], [1,1], [1,2]], 8, "violet"))
 pieces.append(PuzzlePiece([[0,0], [0,1], [0,2], [0,3],[1,2]], 9, "light_blue"))
 
 hole = Cell(6,0,-1,"black")
+board.set_hole(hole.x, hole.y)
+pieces.sort(key=lambda x: x.length, reverse=True)	
 
 search(b, pieces, hole)
 # search(b, pieces, 0)
