@@ -5,7 +5,7 @@ Created on Mon Feb 18 00:26:28 2019
 @author: Farabi
 """
 from colored import fg, bg, attr
-
+from random import * 
 #make blank 7x7 block
 
 
@@ -31,52 +31,13 @@ class Cell:
 		oldx, oldy = self.x, self.y 
 		self.x, self.y = oldy, -1 * oldx 
 
+	def __eq__(self, other):
+		return self.x == other.x and self.y == other.y and self.resident == other.resident 
 
-class Board:
-
-	def __init__(self, dimension_x=7, dimension_y=7):
-		self.dimension_x = dimension_x
-		self.dimension_y = dimension_y
-		self.data = list()
-		for i in range(self.dimension_x):
-			self.data.append([])
-			for j in range(self.dimension_y):
-				self.data[i].append(Cell())
-
-	def print(self):
-		for i in range(self.dimension_x):
-			for j in range(self.dimension_y):
-				print("%s%3s%s" % (fg(self.data[i][j].color), self.data[i][j].resident, attr('reset')), end=" ")
-			print("")
-
-	def check_board(self):
-		flag = True
-		for i in range(self.dimension_x):
-			for j in range(self.dimension_y):		
-				if (self.data[i][j].resident == 0):
-					flag = False
-					break
-		return flag 
-
-	def set_hole(self, x=0, y=0):
-		self.hole_cell = Cell(x,y,-1, "black")
-		self.data[self.hole_cell.x][self.hole_cell.y] = self.hole_cell
-
-	def get_hole(self):
-		return self.hole_cell
-
-	def get_pieces(self):
-		onboard = []
-		for i in range(self.dimension_x):
-			for j in range(self.dimension_y):
-				if (self.data[i][j].resident > 0) and (self.data[i][j].resident not in onboard):
-					onboard.append(self.data[i][j].resident)
-		return onboard
-
+	def __repr__(self):
+		return str(self.x)+" "+str(self.y)+" "+str(self.resident)
 
 class PuzzlePiece:
-
-
 	def __init__(self, d=[], id=0 , color="red"):
 		self.cells = list()
 		self.data = d.copy()
@@ -114,10 +75,135 @@ class PuzzlePiece:
 		t = PuzzlePiece(self.data,self.id,self.color)
 		return t
 
+	def __eq__(self, other):
+		if len(self.cells) == len(other.cells):
+			p1 = self.translate(0,0).copy()
+			p2 = other.translate(0,0).copy()
+
+			t1 = list([p1])
+			t2 = list([p2])
+
+			for i in range(4):
+				t1.append(t1[i])
+				t2.append(t2[i])
+				t1[i+1].rotate(1)
+				t2[i+1].rotate(1)
+
+
+			for i in range(4):
+				for j in range(4):
+					match = 0 
+					for k in range(len(t1[i].cells)):
+						c1 = t1[i].cells[k]
+						c2 = t2[j].cells[k]
+						if (c1 == c2):
+							match = match + 1
+					if match == len(t1[i].cells):
+						return True
+			return False 
+		else:
+			return False 
+
+
+	def __repr__(self):
+		res = "|"
+		for c in self.cells:
+			res = res + repr(c) + ", "
+
+		return res+"|"
+
+
+class Board:
+
+	def __init__(self, dimension_x=7, dimension_y=7):
+		self.dimension_x = dimension_x
+		self.dimension_y = dimension_y
+		self.data = list()
+		for i in range(self.dimension_x):
+			self.data.append([])
+			for j in range(self.dimension_y):
+				self.data[i].append([Cell()])
+
+
+	def print(self):
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):
+				print("%s%3s%s" % (fg(self.data[i][j][0].color), self.data[i][j][0].resident, attr('reset')), end=" ")
+			print("")
+
+	def check_board(self):
+		flag = True
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):		
+				if (self.data[i][j][0].resident == 0):
+					flag = False
+					break
+		return flag 
+
+	def set_hole(self, x=0, y=0):
+		self.hole_cell = Cell(x,y,-1, "black")
+		self.data[self.hole_cell.x][self.hole_cell.y][0] = self.hole_cell
+
+	def get_hole(self):
+		return self.hole_cell
+
+	def get_pieces(self):
+		onboard = set()
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):
+				for c in self.data[i][j]:
+					if (c.resident > 0):
+						onboard.add(c.resident)
+		return list(onboard)
+
+	def full_print(self):
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):
+				printstr = ""
+				for c in self.data[i][j]:
+					printstr = printstr + str(c.resident) 
+
+				print("%9s" % (printstr), end=" ")
+			print("")
+
+	def print(self):
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):
+				printstr = ""
+				for c in self.data[i][j]:
+					printstr = printstr + str(c.resident) 
+
+				if printstr == "0":
+					print("%9s" % ("0"), end=" ")
+				elif printstr[0] == "0":
+					print("%9s" % (printstr[1:2]), end=" ")
+				else:
+					print("%9s" % ("-1"), end=" ")
+					
+			print("")
+
+
+	def remove_l_piece(self, piece):	
+		for cell in piece.cells:
+			try:
+				self.data[cell.x][cell.y].remove(cell)
+			except:
+				print("not in the list")
+
+
+def loose_piece_on_board(piece, board):
+	if in_boundary(piece, board):  
+
+		for cell in piece.cells:	
+			board.data[cell.x][cell.y].append(cell)
+		return True
+	else:
+		return False
+
 def place_piece_on_board(piece, board):
 	if count_overlap(piece, board) == 0 and in_boundary(piece, board):  
 		for cell in piece.cells:	
-			board.data[cell.x][cell.y] = cell
+			board.data[cell.x][cell.y][0] = cell
 		return True
 	else:
 		return False
@@ -140,7 +226,7 @@ def in_boundary(piece, board):
 			break
 	return flag
 
-#helper function to count how many cells overlap existing pieces on the board
+#helper function to count how many cells overlap existing pieces on the  
 def count_overlap(piece, board):
 	overlap = 0
 	for cell in piece.cells:
@@ -150,6 +236,19 @@ def count_overlap(piece, board):
 				# print(cell.x, cell.y, board.data[cell.x][cell.y].resident, piece.id)
 				overlap = overlap + 1 
 	return overlap
+
+def count_loose_overlap(piece, board):
+	overlap = 0
+	for cell in piece.cells:
+		print(cell)
+		for c in board.data[cell.x][cell.y]:
+			if (c.resident != piece.id):
+				if (c.resident == 0):
+					pass
+				else:
+					overlap = overlap +1 
+	return overlap
+
 
 def print_overlap(piece, board):
 	for cell in piece.cells:
@@ -188,12 +287,39 @@ def initial_options(board, pieces):
 
 
 
-def search(board, pieces, hole):
-	for piece in pieces:
-		options = generate_possible_options(piece, board)
-		for o in options:
-			place_piece_on_board(o, board)
+def random_search(board, pieces, hole):
+	iteration = 0
+
+	while(not is_goal_state(board)):
+		shuffle(pieces)
+		for piece in pieces:
+			options = generate_possible_options(piece,board)
+			if (len(options) == 0):
+				break
+			else:
+				selected_piece = choice(options)
+				while(not place_piece_on_board(selected_piece,board)):
+					selected_piece = choice(options)
+
+		iteration = iteration + 1
+		# print("current iteration: ", iteration)
+		# board.print()
+		if is_goal_state(board):
+			return board 
+		else:
+			del board
+			board = Board()
+			board.set_hole(6,0)
 	return board 
+
+def ge_search(board, pieces, hole):
+	ps = [p.copy() for p in pieces]
+	iteration = 0 
+	print(ps)
+
+	
+
+	return board
 
 
 # driver program
@@ -211,9 +337,24 @@ pieces.append(PuzzlePiece([[0,1], [1,0], [1,1], [1,2]], 8, "violet"))
 pieces.append(PuzzlePiece([[0,0], [0,1], [0,2], [0,3],[1,2]], 9, "light_blue"))
 
 hole = Cell(6,0,-1,"black")
-board.set_hole(hole.x, hole.y)
+b.set_hole(hole.x, hole.y)
 pieces.sort(key=lambda x: x.length, reverse=True)	
 
-search(b, pieces, hole)
+# b = random_search(b, pieces, hole)
+
+# b.print()
+# loose_piece_on_board(pieces[0],b)
+
+# loose_piece_on_board(pieces[2],b)
+# # place_piece_on_board(pieces[0],b.print)
+# print(count_loose_overlap(pieces[8],b))
+ge_search(b, pieces,hole)
+b.full_print()
+
+
+# b.print()
+
+# place_piece_on_board(pieces[4],b)
+# print(b.get_pieces())
 # search(b, pieces, 0)
 # print(is_goal_state(b))
