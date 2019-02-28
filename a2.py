@@ -119,6 +119,7 @@ class Board:
 		self.dimension_x = dimension_x
 		self.dimension_y = dimension_y
 		self.data = list()
+		self.overlap_count = 0 
 		for i in range(self.dimension_x):
 			self.data.append([])
 			for j in range(self.dimension_y):
@@ -142,7 +143,7 @@ class Board:
 
 	def set_hole(self, x=0, y=0):
 		self.hole_cell = Cell(x,y,-1, "black")
-		self.data[self.hole_cell.x][self.hole_cell.y][0] = self.hole_cell
+		self.data[self.hole_cell.x][self.hole_cell.y].append(self.hole_cell)
 
 	def get_hole(self):
 		return self.hole_cell
@@ -175,10 +176,10 @@ class Board:
 
 				if printstr == "0":
 					print("%9s" % ("0"), end=" ")
-				elif printstr[0] == "0":
-					print("%9s" % (printstr[1:2]), end=" ")
-				else:
+				elif printstr[1] == "-":
 					print("%9s" % ("-1"), end=" ")
+				else:
+					print("%9s" % (printstr[1:2]), end=" ")
 					
 			print("")
 
@@ -189,6 +190,16 @@ class Board:
 				self.data[cell.x][cell.y].remove(cell)
 			except:
 				print("not in the list")
+
+	def get_board_overlaps(self):
+		self.overlap_count = 0
+		for i in range(self.dimension_x):
+			for j in range(self.dimension_y):
+				self.overlap_count = self.overlap_count + len(self.data[i][j]) - 1 
+		return self.overlap_count
+
+	def is_goal(self):
+		return self.get_board_overlaps() == 0 
 
 
 def loose_piece_on_board(piece, board):
@@ -268,7 +279,8 @@ def generate_possible_options(piece, board):
 			for k in range(4):
 				cur_piece = piece.copy()
 				cur_piece = cur_piece.rotate(k).translate(i,j)
-				if in_boundary(cur_piece,board) and count_overlap(cur_piece, board) == 0:
+#				if in_boundary(cur_piece,board) and count_overlap(cur_piece, board) == 0:
+				if in_boundary(cur_piece, board):
 					possible.append(cur_piece)
 	return possible
 
@@ -312,17 +324,45 @@ def random_search(board, pieces, hole):
 			board.set_hole(6,0)
 	return board 
 
+def init_population(size, board, pieces, hole):
+	boards = list()
+	for i in range(size):
+		boards.append(Board())
+		boards[i].set_hole(hole.x, hole.y)
+		for p in pieces:
+			options = generate_possible_options(p, boards[i])
+			loose_piece_on_board(choice(options), boards[i])
+	return boards
+
+def evaluate(boards):
+	minimum_overlap = 99999
+	best = ""
+	for b in boards:
+		oc = b.get_board_overlaps()
+		if oc < minimum_overlap:
+			minimum_overlap = oc 
+			best = b
+	return b
+
+
 def ge_search(board, pieces, hole):
 	ps = [p.copy() for p in pieces]
 	iteration = 0 
 	print(ps)
 
+	population = init_population(10, board, pieces, hole)
+	population.sort(key=lambda x: x.overlap_count)
+	best = evaluate(population)
+	return best 
+	
+# driver program
+def dfs(board, pieces, hole):
+	stack = []
+	vertices = initial_options(board, pieces)
 	
 
-	return board
 
 
-# driver program
 
 b = Board()
 pieces = []
@@ -348,7 +388,7 @@ pieces.sort(key=lambda x: x.length, reverse=True)
 # loose_piece_on_board(pieces[2],b)
 # # place_piece_on_board(pieces[0],b.print)
 # print(count_loose_overlap(pieces[8],b))
-ge_search(b, pieces,hole)
+b = ge_search(b, pieces,hole)
 b.full_print()
 
 
